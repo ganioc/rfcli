@@ -1,15 +1,18 @@
 {
   "name": "rfccli",
-  "version": "1.0.2",
-  "description": "",
+  "version": "1.0.5",
+  "description": "CLI for RFC",
   "main": "index.js",
   "bin": {
     "rfccli": "./dist/cli.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "run": "rfccli",
-    "install": "tsc -p ./ && chmod +x ./dist/cli.js"
+    "start": "rfccli",
+    "build": "",
+    "preinstall": "tsc -p ./ && chmod +x ./dist/cli.js",
+    "install": "",
+    "prepublish": ""
   },
   "repository": {
     "type": "git",
