@@ -11,7 +11,7 @@
     "start": "rfccli",
     "build": "",
     "preinstall": "tsc -p ./ && chmod +x ./dist/cli.js",
-    "install": "",
+    "install": "echo \"install ... \"",
     "prepublish": ""
   },
   "repository": {
@@ -22,6 +22,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/node": "^10.12.18",
+    "colors": "^1.3.3",
     "readline": "^1.3.0"
   }
 }
