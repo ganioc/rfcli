@@ -35,9 +35,9 @@ export class RPCClient {
     }
 
     async callAsync(funcName: string, funcArgs: any): Promise<{ resp: string | null, ret: number }> {
-        return new Promise<{ resp: string | null, ret: number }>((reslove, reject) => {
+        return new Promise<{ resp: string | null, ret: number }>((resolve, reject) => {
             this.call(funcName, funcArgs, (resp, statusCode) => {
-                reslove({ resp, ret: statusCode });
+                resolve({ resp, ret: statusCode });
             });
         });
     }

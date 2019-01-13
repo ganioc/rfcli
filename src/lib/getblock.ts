@@ -1,11 +1,11 @@
 import { RPCClient } from '../client/client/rfc_client';
 import { ErrorCode } from "../core";
-import { IfResult } from './common';
+import { IfResult, IfContext } from './common';
 
 const FUNC_NAME = 'getBlock';
 
 
-export async function getBlock(client: RPCClient, args: string[]): Promise<IfResult> {
+export async function getBlock(ctx: IfContext, args: string[]): Promise<IfResult> {
     return new Promise<IfResult>(async (resolve) => {
 
         // check args
@@ -20,8 +20,10 @@ export async function getBlock(client: RPCClient, args: string[]): Promise<IfRes
         let params =
         {
             which: (args[0].length < 64) ? parseInt(args[0]) : args[0],
-            transactions: (args[1].toLowerCase() === 'true') ? true : false
+            transactions: (args[1] === undefined) ? false : ((args[1].toLowerCase() === 'true') ? true : false)
         }
+
+        let client = ctx.client;
 
         let cr = await client.callAsync(FUNC_NAME, params);
 

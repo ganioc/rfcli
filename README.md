@@ -2,6 +2,7 @@
 
 ## Change History
 - 1.0.5 Modify package.scripts.preinstall
+- 1.0.6 Add getBalance, getBlock
 
 ## dependency
 - ES2017

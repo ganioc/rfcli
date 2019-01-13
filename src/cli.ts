@@ -7,25 +7,33 @@ import * as readline from 'readline';
 import * as process from 'process';
 import * as colors from 'colors';
 import { addressFromSecretKey } from './core/address';
-import { RPCClient, NewChainClient } from './client/client/rfc_client';
+import { RPCClient } from './client/client/rfc_client';
 
 import { testcmd } from './lib/testcmd';
 
 import { IfResult } from './lib/common';
-import { ErrorCode } from './core';
+import { ErrorCode } from './core/error_code';
 import { getBlock, prnGetBlock } from './lib/getblock';
 import { getBalance, prnGetBalance } from './lib/getbalance';
+import { createToken, prnCreateToken } from './lib/createtoken';
+import { getReceipt, prnGetReceipt } from './lib/getreceipt';
+
+const { randomBytes } = require('crypto');
+const secp256k1 = require('secp256k1');
 
 const VERSION = '0.1';
 const PROMPT = '> ';
+
 let SYSINFO: any = {};
 SYSINFO.secret = "";
 SYSINFO.host = "";
 SYSINFO.port = "";
 SYSINFO.address = "";
 
-let chainClient: NewChainClient;
+// let chainClient: NewChainClient;
 let clientHttp: RPCClient;
+
+
 
 process.on('unhandledRejection', (err) => {
     console.log(colors.red('unhandledRrejection'));
@@ -76,6 +84,11 @@ const CMDS: ifCMD[] = [
         example: ''
     },
     {
+        name: 'createKey',
+        content: 'create address, public key, secrete key',
+        example: ''
+    },
+    {
         name: 'getAddress',
         content: 'print public address',
         example: ''
@@ -95,6 +108,13 @@ const CMDS: ifCMD[] = [
             '\targ1  -  block number | hash value | \'latest\'\n'
             + '\targ2  -  contain transactions?'
             + '\n\nExample:\n$ getblock 1 false'
+    },
+    {
+        name: 'getReceipt',
+        content: 'get transaction receipt',
+        example: '\n' +
+            '\targ1  -  tx hash\n'
+            + '\n\nExample:\n$ getReceipt c6f697ee409e40db10bbd2533cea35f8e95dc9e92ef360ee5bbd0a2638be98b7'
     },
     {
         name: 'createAddress',
@@ -253,20 +273,20 @@ const initArgs = () => {
     console.log('');
 }
 let initChainClient = (sysinfo: any) => {
-    chainClient = new NewChainClient({
-        host: sysinfo.host,
-        port: sysinfo.port
-    });
+    // chainClient = new NewChainClient({
+    //     host: sysinfo.host,
+    //     port: sysinfo.port
+    // });
     clientHttp = new RPCClient(
         sysinfo.host,
         sysinfo.port
     );
 };
 let handleResult = (f: (result: IfResult) => void, arg: IfResult) => {
-    if (arg.ret === ErrorCode.RESULT_WRONG_ARG) {
+    if (arg.ret === ErrorCode.RESULT_WRONG_ARG || ErrorCode.RESULT_FAILED) {
         console.log(arg.resp);
     }
-    else if (arg.ret !== 200) {
+    else if (arg.ret !== 200 || arg.ret !== ErrorCode.RESULT_OK) {
         console.log(colors.red('No result'));
     } else {
         f(arg);
@@ -282,7 +302,10 @@ let handleCmd = async (cmd: string) => {
     const cmd1 = words[0].toLowerCase();
     const args: string[] = words.splice(1, words.length - 1);
 
-
+    let ctx = {
+        client: clientHttp,
+        sysinfo: SYSINFO
+    }
     let result: any;
 
     switch (cmd1) {
@@ -299,19 +322,43 @@ let handleCmd = async (cmd: string) => {
             break;
         case 'test':
             console.log('Do some test');
-            result = await getBlock(clientHttp, args);
-            handleResult(prnGetBlock, result);
+            // result = await getBlock(ctx, args);
+            // handleResult(prnGetBlock, result);
+            // ctx.client.on();
             break;
         case 'getblock':
-            result = await getBlock(clientHttp, args);
+            result = await getBlock(ctx, args);
             handleResult(prnGetBlock, result);
             break;
         case 'getbalance':
-            result = await getBalance(clientHttp, args);
+            result = await getBalance(ctx, args);
             handleResult(prnGetBalance, result);
+            break;
+        case 'getReceipt':
+            result = await getReceipt(ctx, args);
+            handleResult(prnGetReceipt, result);
+            break;
+        case 'createtoken':
+            result = await createToken(ctx, args);
+            handleResult(prnCreateToken, result);
             break;
         case 'getaddress':
             console.log(SYSINFO.address);
+            break;
+        case 'createkey':
+            let privateKey;
+
+            do {
+                privateKey = randomBytes(32);
+            } while (!secp256k1.privateKeyVerify(privateKey));
+
+            const pkey = secp256k1.publicKeyCreate(privateKey, true);
+
+            let address = addressFromSecretKey(privateKey);
+
+            console.log(colors.green('address   : '), address);
+            console.log(colors.green('public key: '), pkey.toString('hex'));
+            console.log(colors.green('secret key: '), privateKey.toString('hex'));
             break;
         case 'help':
             printHelp(args);

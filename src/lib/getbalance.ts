@@ -1,10 +1,10 @@
 import { RPCClient } from '../client/client/rfc_client';
 import { ErrorCode } from "../core";
-import { IfResult } from './common';
+import { IfResult, IfContext } from './common';
 
 const FUNC_NAME = 'view';
 
-export async function getBalance(client: RPCClient, args: string[]): Promise<IfResult> {
+export async function getBalance(ctx:IfContext, args: string[]): Promise<IfResult> {
     return new Promise<IfResult>(async (resolve) => {
 
         // check args
@@ -22,7 +22,7 @@ export async function getBalance(client: RPCClient, args: string[]): Promise<IfR
             params: { address: args[0] }
         }
 
-        let cr = await client.callAsync(FUNC_NAME, params);
+        let cr = await ctx.client.callAsync(FUNC_NAME, params);
 
         resolve(cr);
     });
