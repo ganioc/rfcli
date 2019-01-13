@@ -19,7 +19,7 @@ export async function getBlock(ctx: IfContext, args: string[]): Promise<IfResult
 
         let params =
         {
-            which: (args[0].length < 64) ? parseInt(args[0]) : args[0],
+            which: (args[0] === 'latest') ? args[0] : ((args[0].length < 64) ? parseInt(args[0]) : args[0]),
             transactions: (args[1] === undefined) ? false : ((args[1].toLowerCase() === 'true') ? true : false)
         }
 

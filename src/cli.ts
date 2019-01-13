@@ -17,6 +17,7 @@ import { getBlock, prnGetBlock } from './lib/getblock';
 import { getBalance, prnGetBalance } from './lib/getbalance';
 import { createToken, prnCreateToken } from './lib/createtoken';
 import { getReceipt, prnGetReceipt } from './lib/getreceipt';
+import { transferTo, prnTransferTo } from './lib/transferto';
 
 const { randomBytes } = require('crypto');
 const secp256k1 = require('secp256k1');
@@ -117,7 +118,16 @@ const CMDS: ifCMD[] = [
             + '\n\nExample:\n$ getReceipt c6f697ee409e40db10bbd2533cea35f8e95dc9e92ef360ee5bbd0a2638be98b7'
     },
     {
-        name: 'createAddress',
+        name: 'transferTo',
+        content: 'Transfer RUFF to some address',
+        example: '\n' +
+            '\targ1  -  address\n'
+            + '\targ2  -  amount\n'
+            + '\targ3  -  fee\n'
+            + '\n\nExample:\n$ transferTo 16ZJ7mRgkWf4bMmQFoyLkqW8eUCA5JqTHg 1000 1'
+    },
+    {
+        name: 'createKey',
         content: 'create a new address',
         example: ''
     },
@@ -341,6 +351,10 @@ let handleCmd = async (cmd: string) => {
         case 'createtoken':
             result = await createToken(ctx, args);
             handleResult(prnCreateToken, result);
+            break;
+        case 'transferto':
+            result = await transferTo(ctx, args);
+            handleResult(prnTransferTo, result);
             break;
         case 'getaddress':
             console.log(SYSINFO.address);
