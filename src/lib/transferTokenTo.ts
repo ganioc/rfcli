@@ -8,26 +8,30 @@ const FUNC_NAME = 'createToken';
 
 // tokenid: string, preBalances: { address: string, amount: string }[], cost: string, fee: string
 
-export async function transferTo(ctx: IfContext, args: string[]): Promise<IfResult> {
+export async function transferTokenTo(ctx: IfContext, args: string[]): Promise<IfResult> {
     return new Promise<IfResult>(async (resolve) => {
 
         // check args
-        if (args.length < 3) {
+        if (args.length < 4) {
             resolve({
                 ret: ErrorCode.RESULT_WRONG_ARG,
                 resp: "Wrong args"
             });
             return;
         }
-        let address = args[0];
-        let amount = args[1];
-        let fee = args[2];
+        let tokenid = args[0];
+        let address = args[1];
+        let amount = args[2];
+        let fee = args[3];
 
         let tx = new ValueTransaction();
-        tx.method = 'transferTo';
-        tx.value = new BigNumber(amount);
+        tx.method = 'transferTokenTo';
         tx.fee = new BigNumber(fee);
-        tx.input = { to: address };
+        tx.input = {
+            tokenid: tokenid,
+            to: address,
+            amount: amount
+        };
 
         let { err, nonce } = await ctx.client.getNonce({ address: ctx.sysinfo.address });
 
@@ -61,6 +65,6 @@ export async function transferTo(ctx: IfContext, args: string[]): Promise<IfResu
         resolve(receiptResult); // {resp, ret}
     });
 }
-export function prnTransferTo(obj: IfResult) {
+export function prnTransferTokenTo(obj: IfResult) {
     console.log(obj.resp);
 }

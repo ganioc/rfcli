@@ -18,6 +18,13 @@ import { getBalance, prnGetBalance } from './lib/getbalance';
 import { createToken, prnCreateToken } from './lib/createtoken';
 import { getReceipt, prnGetReceipt } from './lib/getreceipt';
 import { transferTo, prnTransferTo } from './lib/transferto';
+import { getNonce, prnGetNonce } from './lib/getNonce';
+import { getTokenBalance, prnGetTokenBalance } from './lib/getTokenBalance';
+import { transferTokenTo, prnTransferTokenTo } from './lib/transferTokenTo';
+import { getStake, prnGetStake } from './lib/getstake';
+import { getCandidates, prnGetCandidates } from './lib/getCandidates';
+import { getPeers, prnGetPeers } from './lib/getpeers';
+import { getMiners, prnGetMiners } from './lib/getminers';
 
 const { randomBytes } = require('crypto');
 const secp256k1 = require('secp256k1');
@@ -103,6 +110,40 @@ const CMDS: ifCMD[] = [
             + '\t$ getbalance 1Bbruv7E4nP62ZD4cJqxiGrUD43psK5E2J'
     },
     {
+        name: 'getTokenBalance',
+        content: 'get Token balance under address',
+        example: '\ngetTokenbalance\n'
+            + '\targ1  -  tokenid:string\n'
+            + '\targ2  -  address:string\n'
+            + 'Example:\n'
+            + '\t$ getTokenBalance tokenid 1Bbruv7E4nP62ZD4cJqxiGrUD43psK5E2J'
+    },
+    {
+        name: 'getStake',
+        content: 'get stake ',
+        example: '\n' +
+            '\targ1  -  address\n'
+            + '\n\nExample:\n$ getstake 1Bbruv7E4nP62ZD4cJqxiGrUD43psK5E2J'
+    },
+    {
+        name: 'getCandidates',
+        content: 'get candidates ',
+        example: '\n'
+            + '\n\nExample:\n$ getCandidates'
+    },
+    {
+        name: 'getMiners',
+        content: 'get miners ',
+        example: '\n'
+            + '\n\nExample:\n$ getMiners'
+    },
+    {
+        name: 'getPeers',
+        content: 'get peers ',
+        example: '\n'
+            + '\n\nExample:\n$ getPeers'
+    },
+    {
         name: 'getBlock',
         content: 'get Block',
         example: '\n' +
@@ -125,6 +166,33 @@ const CMDS: ifCMD[] = [
             + '\targ2  -  amount\n'
             + '\targ3  -  fee\n'
             + '\n\nExample:\n$ transferTo 16ZJ7mRgkWf4bMmQFoyLkqW8eUCA5JqTHg 1000 1'
+    },
+    {
+        name: 'transferTokenTo',
+        content: 'Transfer Token to some address',
+        example:
+            '\n\targ1  -  tokenid\n'
+            + '\targ2  -  address\n'
+            + '\targ3  -  amount\n'
+            + '\targ3  -  fee\n'
+            + '\n\nExample:\n$ transferTokenTo tokenid 16ZJ7mRgkWf4bMmQFoyLkqW8eUCA5JqTHg 1000 1'
+    },
+    {
+        name: 'createToken',
+        content: 'create a token',
+        example:
+            '\n\targ1  -  token-name\n'
+            + '\targ2  -  preBalance\n'
+            + '\targ3  -  cost\n'
+            + '\targ4  -  fee\n'
+            + '\n\ncreatetoken token2 [{"address":"1EYLLvMtXGeiBJ7AZ6KJRP2BdAQ2Bof79","amount":"10000"}] 100 1'
+    },
+    {
+        name: 'getNonce',
+        content: 'get nonce of some address',
+        example: '\n' +
+            '\targ1  -  address\n'
+            + '\n\nExample:\n$ getNonce 16ZJ7mRgkWf4bMmQFoyLkqW8eUCA5JqTHg'
     },
     {
         name: 'createKey',
@@ -293,12 +361,12 @@ let initChainClient = (sysinfo: any) => {
     );
 };
 let handleResult = (f: (result: IfResult) => void, arg: IfResult) => {
-    if (arg.ret === ErrorCode.RESULT_WRONG_ARG || ErrorCode.RESULT_FAILED) {
+    if (arg.ret === ErrorCode.RESULT_WRONG_ARG || arg.ret === ErrorCode.RESULT_FAILED) {
         console.log(arg.resp);
     }
-    else if (arg.ret !== 200 || arg.ret !== ErrorCode.RESULT_OK) {
+    else if (arg.ret !== 200 && arg.ret !== ErrorCode.RESULT_OK) {
         console.log(colors.red('No result'));
-    } else {
+    } else {// arg.ret === 200
         f(arg);
     }
 }
@@ -344,17 +412,45 @@ let handleCmd = async (cmd: string) => {
             result = await getBalance(ctx, args);
             handleResult(prnGetBalance, result);
             break;
-        case 'getReceipt':
+        case 'gettokenbalance':
+            result = await getTokenBalance(ctx, args);
+            handleResult(prnGetTokenBalance, result);
+            break;
+        case 'getreceipt':
             result = await getReceipt(ctx, args);
             handleResult(prnGetReceipt, result);
+            break;
+        case 'getstake':
+            result = await getStake(ctx, args);
+            handleResult(prnGetStake, result);
+            break;
+        case 'getcandidates':
+            result = await getCandidates(ctx, args);
+            handleResult(prnGetCandidates, result);
+            break;
+        case 'getpeers':
+            result = await getPeers(ctx, args);
+            handleResult(prnGetPeers, result);
+            break;
+        case 'getminers':
+            result = await getMiners(ctx, args);
+            handleResult(prnGetMiners, result);
+            break;
+        case 'transferto':
+            result = await transferTo(ctx, args);
+            handleResult(prnTransferTo, result);
+            break;
+        case 'transfertokento':
+            result = await transferTokenTo(ctx, args);
+            handleResult(prnTransferTokenTo, result);
             break;
         case 'createtoken':
             result = await createToken(ctx, args);
             handleResult(prnCreateToken, result);
             break;
-        case 'transferto':
-            result = await transferTo(ctx, args);
-            handleResult(prnTransferTo, result);
+        case 'getnonce':
+            result = await getNonce(ctx, args);
+            handleResult(prnGetNonce, result);
             break;
         case 'getaddress':
             console.log(SYSINFO.address);

@@ -4,22 +4,15 @@ import { IfResult, IfContext } from './common';
 
 const FUNC_NAME = 'view';
 
-export async function getBalance(ctx:IfContext, args: string[]): Promise<IfResult> {
+export async function getMiners(ctx: IfContext, args: string[]): Promise<IfResult> {
     return new Promise<IfResult>(async (resolve) => {
 
         // check args
-        if (args.length < 1) {
-            resolve({
-                ret: ErrorCode.RESULT_WRONG_ARG,
-                resp: "Wrong args"
-            });
-            return;
-        }
 
         let params =
         {
-            method: 'getBalance',
-            params: { address: args[0] }
+            method: 'getMiners',
+            params: {}
         }
 
         let cr = await ctx.client.callAsync(FUNC_NAME, params);
@@ -27,7 +20,7 @@ export async function getBalance(ctx:IfContext, args: string[]): Promise<IfResul
         resolve(cr);
     });
 }
-export function prnGetBalance(obj: IfResult) {
+export function prnGetMiners(obj: IfResult) {
     console.log(obj);
     console.log('');
 
@@ -38,7 +31,12 @@ export function prnGetBalance(obj: IfResult) {
     let objJson: any;
     try {
         objJson = JSON.parse(obj.resp);
-        console.log('Ruff: ', objJson.value.replace(/n/g, ''))
+        //console.log('Ruff: ', objJson.value.replace(/n/g, ''))
+        if (objJson.err === 0) {
+            objJson.value.forEach((element: string) => {
+                console.log(element.slice(1));
+            });
+        }
     } catch (e) {
         console.log(e);
     }

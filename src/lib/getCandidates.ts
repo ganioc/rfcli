@@ -1,25 +1,19 @@
 import { RPCClient } from '../client/client/rfc_client';
 import { ErrorCode } from "../core";
 import { IfResult, IfContext } from './common';
+import { strict } from 'assert';
 
 const FUNC_NAME = 'view';
 
-export async function getBalance(ctx:IfContext, args: string[]): Promise<IfResult> {
+export async function getCandidates(ctx: IfContext, args: string[]): Promise<IfResult> {
     return new Promise<IfResult>(async (resolve) => {
 
         // check args
-        if (args.length < 1) {
-            resolve({
-                ret: ErrorCode.RESULT_WRONG_ARG,
-                resp: "Wrong args"
-            });
-            return;
-        }
 
         let params =
         {
-            method: 'getBalance',
-            params: { address: args[0] }
+            method: 'getCandidates',
+            params: {}
         }
 
         let cr = await ctx.client.callAsync(FUNC_NAME, params);
@@ -27,7 +21,7 @@ export async function getBalance(ctx:IfContext, args: string[]): Promise<IfResul
         resolve(cr);
     });
 }
-export function prnGetBalance(obj: IfResult) {
+export function prnGetCandidates(obj: IfResult) {
     console.log(obj);
     console.log('');
 
@@ -38,7 +32,11 @@ export function prnGetBalance(obj: IfResult) {
     let objJson: any;
     try {
         objJson = JSON.parse(obj.resp);
-        console.log('Ruff: ', objJson.value.replace(/n/g, ''))
+        if (objJson.err === 0) {
+            objJson.value.forEach((element: string) => {
+                console.log(element);
+            });
+        }
     } catch (e) {
         console.log(e);
     }

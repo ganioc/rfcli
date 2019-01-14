@@ -2,10 +2,10 @@ import { RPCClient } from '../client/client/rfc_client';
 import { ErrorCode } from "../core";
 import { IfResult, IfContext } from './common';
 
-const FUNC_NAME = 'getBlock';
+const FUNC_NAME = 'getNonce';
 
 
-export async function getBlock(ctx: IfContext, args: string[]): Promise<IfResult> {
+export async function getNonce(ctx: IfContext, args: string[]): Promise<IfResult> {
     return new Promise<IfResult>(async (resolve) => {
 
         // check args
@@ -19,8 +19,7 @@ export async function getBlock(ctx: IfContext, args: string[]): Promise<IfResult
 
         let params =
         {
-            which: (args[0] === 'latest') ? args[0] : ((args[0].length < 64) ? parseInt(args[0]) : args[0]),
-            transactions: (args[1] === undefined) ? false : ((args[1].toLowerCase() === 'true') ? true : false)
+            address: args[0]
         }
 
         let cr = await ctx.client.callAsync(FUNC_NAME, params);
@@ -28,6 +27,6 @@ export async function getBlock(ctx: IfContext, args: string[]): Promise<IfResult
         resolve(cr);
     });
 }
-export function prnGetBlock(obj: IfResult) {
+export function prnGetNonce(obj: IfResult) {
     console.log(obj.resp);
 }

@@ -4,9 +4,7 @@ import { IfResult, IfContext, checkReceipt } from './common';
 import { BigNumber } from 'bignumber.js';
 import { ValueTransaction } from '../core/value_chain/transaction'
 
-const FUNC_NAME = 'createToken';
-
-// tokenid: string, preBalances: { address: string, amount: string }[], cost: string, fee: string
+// tokenid: string, preBalances: string { address: string, amount: string }[], cost: string, fee: string
 
 export async function createToken(ctx: IfContext, args: string[]): Promise<IfResult> {
     return new Promise<IfResult>(async (resolve) => {
@@ -20,21 +18,26 @@ export async function createToken(ctx: IfContext, args: string[]): Promise<IfRes
             return;
         }
         let tokenid = args[0];
+        console.log(args[1]);
+        console.log(typeof args[1]);
+        try {
+            let objPrebalances = JSON.parse(args[1]);
+            console.log(objPrebalances);
+        } catch (e) {
+            console.log(e);
+        }
+
         let preBalances = JSON.parse(args[1]);
         let cost = args[2];
         let fee = args[3];
 
         let tx = new ValueTransaction();
-        tx.method = 'createToken',
-            tx.value = new BigNumber(cost);
+        tx.method = 'createToken';
+        tx.value = new BigNumber(cost);
         tx.fee = new BigNumber(fee);
         tx.input = { tokenid, preBalances };
 
-        let params1 = {
-            address: ctx.sysinfo.address
-        };
-
-        let { err, nonce } = await ctx.client.getNonce(params1);
+        let { err, nonce } = await ctx.client.getNonce({ address: ctx.sysinfo.address });
         if (err) {
             console.error(`transferTo getNonce failed for ${err}`);
             resolve({
@@ -61,13 +64,6 @@ export async function createToken(ctx: IfContext, args: string[]): Promise<IfRes
         // 需要查找receipt若干次，直到收到回执若干次，才确认发送成功, 否则是失败
         let receiptResult = await checkReceipt(ctx, tx.hash);
 
-        // if(receiptResult.err){
-        //     resolve({
-        //         ret: ErrorCode.RESULT_FAILED,
-        //         resp: `createToken failed: ${receiptResult.err}`
-        //     });
-        //     return;
-        // }
         resolve(receiptResult); // {resp, ret}
     });
 }

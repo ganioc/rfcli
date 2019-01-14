@@ -4,11 +4,11 @@ import { IfResult, IfContext } from './common';
 
 const FUNC_NAME = 'view';
 
-export async function getBalance(ctx:IfContext, args: string[]): Promise<IfResult> {
+export async function getTokenBalance(ctx: IfContext, args: string[]): Promise<IfResult> {
     return new Promise<IfResult>(async (resolve) => {
 
         // check args
-        if (args.length < 1) {
+        if (args.length < 2) {
             resolve({
                 ret: ErrorCode.RESULT_WRONG_ARG,
                 resp: "Wrong args"
@@ -19,7 +19,10 @@ export async function getBalance(ctx:IfContext, args: string[]): Promise<IfResul
         let params =
         {
             method: 'getBalance',
-            params: { address: args[0] }
+            params: {
+                address: args[1],
+                tokenid: args[0]
+            }
         }
 
         let cr = await ctx.client.callAsync(FUNC_NAME, params);
@@ -27,7 +30,7 @@ export async function getBalance(ctx:IfContext, args: string[]): Promise<IfResul
         resolve(cr);
     });
 }
-export function prnGetBalance(obj: IfResult) {
+export function prnGetTokenBalance(obj: IfResult) {
     console.log(obj);
     console.log('');
 
@@ -38,7 +41,7 @@ export function prnGetBalance(obj: IfResult) {
     let objJson: any;
     try {
         objJson = JSON.parse(obj.resp);
-        console.log('Ruff: ', objJson.value.replace(/n/g, ''))
+        // console.log('Ruff: ', objJson.value.replace(/n/g, ''))
     } catch (e) {
         console.log(e);
     }

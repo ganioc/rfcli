@@ -73,6 +73,8 @@ export class RPCClient {
         if (cr.ret !== 200) {
             return { err: ErrorCode.RESULT_FAILED };
         }
+        console.log('nonce fb:');
+        console.log(cr);
         return JSON.parse(cr.resp!);
 
     }
