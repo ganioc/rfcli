@@ -25,6 +25,11 @@ import { getStake, prnGetStake } from './lib/getstake';
 import { getCandidates, prnGetCandidates } from './lib/getCandidates';
 import { getPeers, prnGetPeers } from './lib/getpeers';
 import { getMiners, prnGetMiners } from './lib/getminers';
+import { register, prnRegister } from './lib/register';
+import { mortgage, prnMortgage } from './lib/mortgage';
+import { unmortgage, prnUnmortgage } from './lib/unmortgage';
+import { vote, prnVote } from './lib/vote';
+import { getVote, prnGetVote } from './lib/getvote';
 
 const { randomBytes } = require('crypto');
 const secp256k1 = require('secp256k1');
@@ -54,6 +59,8 @@ process.on('uncaughtException', (err) => {
 process.on('warning', (warning) => {
     console.log(colors.red('warning'));
     console.log(warning);
+
+    console.log('/node_modules/sqlite3-transactions/sqlite3-transactions.js:1:73 Change sys to util');
 });
 
 let keyin = readline.createInterface(process.stdin, process.stdout);
@@ -198,6 +205,43 @@ const CMDS: ifCMD[] = [
         name: 'createKey',
         content: 'create a new address',
         example: ''
+    },
+    {
+        name: 'register',
+        content: 'register to be a candidate with caller\'s address',
+        example: '\n' +
+            '\targ1  -  fee\n'
+            + '\n\nExample:\n$ register 5'
+    },
+    {
+        name: 'mortgage',
+        content: 'mortgage some balance',
+        example: '\n' +
+            '\targ1  -  amount\n'
+            + '\targ2 -  fee\n'
+            + '\n\nExample:\n$ mortgage 1000 5'
+    },
+    {
+        name: 'unmortgage',
+        content: 'unmortgage back to balance',
+        example: '\n' +
+            '\targ1  -  amount\n'
+            + '\targ2 -  fee\n'
+            + '\n\nExample:\n$ unmortgage 1000 5'
+    },
+    {
+        name: 'vote',
+        content: 'vote to candidates',
+        example: '\n' +
+            '\targ1  -  [candidate1, candidate2]\n'
+            + '\targ2 -  fee\n'
+            + '\n\nExample:\n$ vote ["13dhmGDEuaoV7QvwbTm4gC6fx7CCRM7VkY","xxx"] 5'
+    },
+    {
+        name: 'getVote',
+        content: 'getVote',
+        example: '\n'
+            + '\n\nExample:\n$ getVote'
     },
     {
         name: 'test',
@@ -451,6 +495,26 @@ let handleCmd = async (cmd: string) => {
         case 'getnonce':
             result = await getNonce(ctx, args);
             handleResult(prnGetNonce, result);
+            break;
+        case 'register':
+            result = await register(ctx, args);
+            handleResult(prnRegister, result);
+            break;
+        case 'mortgage':
+            result = await mortgage(ctx, args);
+            handleResult(prnMortgage, result);
+            break;
+        case 'unmortgage':
+            result = await unmortgage(ctx, args);
+            handleResult(prnUnmortgage, result);
+            break;
+        case 'vote':
+            result = await vote(ctx, args);
+            handleResult(prnVote, result);
+            break;
+        case 'getvote':
+            result = await getVote(ctx, args);
+            handleResult(prnGetVote, result);
             break;
         case 'getaddress':
             console.log(SYSINFO.address);

@@ -4,22 +4,21 @@ import { IfResult, IfContext } from './common';
 
 const FUNC_NAME = 'view';
 
-export async function getBalance(ctx:IfContext, args: string[]): Promise<IfResult> {
+export async function getBalance(ctx: IfContext, args: string[]): Promise<IfResult> {
     return new Promise<IfResult>(async (resolve) => {
-
+        let params: any;
         // check args
         if (args.length < 1) {
-            resolve({
-                ret: ErrorCode.RESULT_WRONG_ARG,
-                resp: "Wrong args"
-            });
-            return;
-        }
-
-        let params =
-        {
-            method: 'getBalance',
-            params: { address: args[0] }
+            params = {
+                method: 'getBalance',
+                params: { address: ctx.sysinfo.address }
+            };
+        } else {
+            params =
+                {
+                    method: 'getBalance',
+                    params: { address: args[0] }
+                }
         }
 
         let cr = await ctx.client.callAsync(FUNC_NAME, params);

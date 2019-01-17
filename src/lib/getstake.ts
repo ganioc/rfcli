@@ -1,6 +1,7 @@
 import { RPCClient } from '../client/client/rfc_client';
 import { ErrorCode } from "../core";
 import { IfResult, IfContext } from './common';
+import * as colors from 'colors';
 
 const FUNC_NAME = 'view';
 
@@ -38,7 +39,8 @@ export function prnGetStake(obj: IfResult) {
     let objJson: any;
     try {
         objJson = JSON.parse(obj.resp);
-        //console.log('Ruff: ', objJson.value.replace(/n/g, ''))
+        console.log(colors.green('On stake:'));
+        console.log('Ruff: ', objJson.value.replace(/n/g, ''))
     } catch (e) {
         console.log(e);
     }
