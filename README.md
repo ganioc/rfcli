@@ -5,33 +5,28 @@
 - 1.0.6 Add getBalance, getBlock
 - 1.0.7 Add createToken, getMiners ...
 - 1.0.8 Add vote, mortgage, unmortgage ...
+- 1.0.9 upload ， modfity README
 
 ## dependency
 - ES2017
 - tsc, typescript compiler
 - winston v2.4.2 , 去掉兼容性，想办法，新版本是v3.1.0
 
+## install
+
+```
+// under directory, run
+npm install 
+
+```
+
 ## How to use?
 
 ```
 
-./dist/cli.js --secret 054898c1a167977bc42790a3064821a2a35a8aa53455b9b3659fb2e9562010f7 --host 40.73.100.56 --port 18089
-
 ./dist/cli.js --secret 64d8284297f40dc7475b4e53eb72bc052b41bef62fecbd3d12c5e99b623cfc11 --host 40.73.100.56 --port 18089
 
-$rfccli --secret 64d8284297f40dc7475b4e53eb72bc052b41bef62fecbd3d12c5e99b623cfc11 --host 40.73.100.56 --port 18089
 
-// No 9
-13dhmGDEuaoV7QvwbTm4gC6fx7CCRM7VkY
-9832ef4c12abdee85290a5fe709f426a8081899346406e21ca70fad259b66f8e
-./dist/cli.js --secret 9832ef4c12abdee85290a5fe709f426a8081899346406e21ca70fad259b66f8e --host 40.73.100.56 --port 18089
-mortgage 500 1
-getbalance 13dhmGDEuaoV7QvwbTm4gC6fx7CCRM7VkY
-
-// No 10
-1NsES7YKm8ZbRE4K5LaPGKeSELVtAwzoTw
-add099cc7a530f73530d94824c83f69c1a555d43c6b3d9b74ba76d2f64d4509d
-./dist/cli.js --secret add099cc7a530f73530d94824c83f69c1a555d43c6b3d9b74ba76d2f64d4509d --host 40.73.100.56 --port 18089
 
 transferTo  16ZJ7mRgkWf4bMmQFoyLkqW8eUCA5JqTHg 2000 1       
 transferTo  12nD5LgUnLZDbyncFnoFB43YxhSFsERcgQ 20 1      
