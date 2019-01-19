@@ -60,7 +60,11 @@ process.on('warning', (warning) => {
     console.log(colors.red('warning'));
     console.log(warning);
 
+    console.log('\n');
+    console.log(colors.yellow('Please change the file mentioned below:'));
     console.log('/node_modules/sqlite3-transactions/sqlite3-transactions.js:1:73 Change sys to util');
+    console.log('line 1: var sys = require(\'sys\'),');
+    console.log('to: var sys = require(\'util\'),');
 });
 
 let keyin = readline.createInterface(process.stdin, process.stdout);
