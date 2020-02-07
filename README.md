@@ -25,20 +25,36 @@ npm install
 
 ```
 
-./dist/cli.js --secret 64d8284297f40dc7475b4e53eb72bc052b41bef62fecbd3d12c5e99b623cfc11 --host 40.73.100.56 --port 18089
 
+// start cli
+// create your keystore file with your secret
+./rfccli --createKeyStore user.json
 
+// login with your keystore file, with sever host and port
+./rfccli --keyStore xxx.json --host xx.xx.xx.xx  --port 18089
 
-transferTo  16ZJ7mRgkWf4bMmQFoyLkqW8eUCA5JqTHg 2000 1       
-transferTo  12nD5LgUnLZDbyncFnoFB43YxhSFsERcgQ 20 1      
+// To unlock the secret, enter the code you created with the keystore file
+// Otherwise you will not be able to do transfer ... functions, only viewing 
+unlock
+
+// get balance for default account
+getBalance
+// transfer 200 sys token to 16ZJ7mRgkWf4bMmQFoyLkqW8eUCA5JqTHg with fee 1 sys token
+transferTo          16ZJ7mRgkWf4bMmQFoyLkqW8eUCA5JqTHg  1000   0.1
+transferTo  12nD5LgUnLZDbyncFnoFB43YxhSFsERcgQ 20 1
 transferTo  13dhmGDEuaoV7QvwbTm4gC6fx7CCRM7VkY  1000 1
-transferTo  1NsES7YKm8ZbRE4K5LaPGKeSELVtAwzoTw  2000 1 
+transferTo  1NsES7YKm8ZbRE4K5LaPGKeSELVtAwzoTw  2000 1
 
-createtoken token2 [{"address":"1EYLLvMtXGeiBJ7AZ6KJRP2BdAQ2Bof79","amount":"10000"}] 100 1
-gettokenbalance token2 1EYLLvMtXGeiBJ7AZ6KJRP2BdAQ2Bof79
-transfertokento token2 1LuwjNj8wkqo237N7Gh8nZSSvUa6TZ5ds4 10 1
-gettokenbalance token2  1LuwjNj8wkqo237N7Gh8nZSSvUa6TZ5ds4
-getbalance 1EYLLvMtXGeiBJ7AZ6KJRP2BdAQ2Bof79
+//issue token with token name 'token2'
+createToken token2 [{"address":"1EYLLvMtXGeiBJ7AZ6KJRP2BdAQ2Bof79","amount":"10000"}] 100 1
+
+//get token2 balance for account
+getTokenBalance token2 1EYLLvMtXGeiBJ7AZ6KJRP2BdAQ2Bof79
+transferTokenTo token2 1LuwjNj8wkqo237N7Gh8nZSSvUa6TZ5ds4 10 1
+getTokenBalance token2  1LuwjNj8wkqo237N7Gh8nZSSvUa6TZ5ds4
+getBalance 1EYLLvMtXGeiBJ7AZ6KJRP2BdAQ2Bof79
+getBalance 12nD5LgUnLZDbyncFnoFB43YxhSFsERcgQ
+transferTo 
 
 
 ```
