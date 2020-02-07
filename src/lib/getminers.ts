@@ -16,12 +16,18 @@ export async function getMiners(ctx: IfContext, args: string[]): Promise<IfResul
         }
 
         let cr = await ctx.client.callAsync(FUNC_NAME, params);
-        console.log(cr);
+        if (ctx.sysinfo.verbose) {
+            console.log(cr);
+        }
+
         resolve(cr);
     });
 }
-export function prnGetMiners(obj: IfResult) {
-    console.log(obj);
+export function prnGetMiners(ctx: IfContext, obj: IfResult) {
+    if (ctx.sysinfo.verbose) {
+        console.log(obj);
+    }
+
     console.log('');
 
     if (!obj.resp) {
@@ -31,7 +37,6 @@ export function prnGetMiners(obj: IfResult) {
     let objJson: any;
     try {
         objJson = JSON.parse(obj.resp);
-        //console.log('Ruff: ', objJson.value.replace(/n/g, ''))
         if (objJson.err === 0) {
             objJson.value.forEach((element: string) => {
                 console.log(element.slice(1));

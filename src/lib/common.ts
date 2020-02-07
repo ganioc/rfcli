@@ -1,10 +1,203 @@
 import { RPCClient } from '../client/client/rfc_client';
-import { resolve } from 'path';
-import { ErrorCode } from '../core';
+import { ErrorCode } from '../core/error_code';
+import { isValidAddress } from '../core/address';
+import { ValueTransaction } from '../core';
+const BigNumber = require('bignumber.js');
 
 const MAX_CONFIRM_TIMES = 3;
 const BLOCK_INTERVAL = 10;
 
+export const TOKEN_MAX_LENGTH = 12;
+export const TOKEN_MIN_LENGTH = 3;
+export const FEE_MAX = 0.1;
+export const FEE_MIN = 0.1;
+export const MAX_NONLIQUIDITY = 1000000000000000000;
+export const MAX_TOKEN_AMOUNT = 1000000000000000000;
+export const MAX_COST = 1000000000000;
+export const MAX_DEPOSIT_SYS = 3000000;
+export const MAX_VOTE_CANDIDATES = 7;
+
+const NUM_DIGITS = 12;
+const MAX_NORMAL_TOKEN_PRECISION = 9;
+const MAX_QUERY_NUM = 21;
+
+// export const sysTokenSym = 'SYS';
+export const sysTokenSym = 'RUFF';
+
+// const REGIP = /^[1-9]{1}\d{0,2}\.[1-9]{1}\d{0,2}\.[1-9]{1}\d{0,2}\.[1-9]{1}\d{0,2}(:\d{5,9})?$/g;
+const REGIP = /^[1-9]{1}\d{0,2}\.([1-9]{1}\d{0,2}|0)\.([1-9]{1}\d{0,2}|0)\.([1-9]{1}\d{0,2}|0)(:\d{5,9})?$/g;
+
+export const SYS_TOKEN = 'SYS';
+export const SVT_TOKEN = 'RVT';
+export const RUFF_TOKEN = 'RUFF';
+
+const TOKEN_MIN_LEN = 3;
+const TOKEN_MAX_LEN = 12;
+
+const REGPAT = /^[A-Z]{1}[0-9A-Z]{2,11}$/g;
+
+/**
+ *
+ * @param amount: amount of token
+ *
+ * - it should be a BigNumber
+ */
+export function checkAmount(amount: string): boolean {
+
+    let bn = new BigNumber(amount);
+
+    if (bn.isNaN() === true) {
+        return false;
+    }
+    let num = JSON.parse(amount);
+    return num >= 0;
+}
+export function checkDepositAmount(amount: string): boolean {
+    let bn = new BigNumber(amount);
+    if (bn.lt(new BigNumber(MAX_DEPOSIT_SYS))) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+function numNumbers(str: string) {
+    let lst = str.split('');
+    let counter = 0;
+
+    for (let i = 0; i < lst.length; i++) {
+        if (isNaN(parseInt(lst[i]))) {
+            counter++;
+        }
+    }
+    return str.length - counter;
+
+}
+export function checkTokenid(tokenid: string) {
+    let str = tokenid.toUpperCase();
+
+    // 3~12位
+    if (str.length < TOKEN_MIN_LEN || str.length > TOKEN_MAX_LEN) {
+        return false;
+    }
+
+    if (str === SYS_TOKEN || str === SVT_TOKEN || str === RUFF_TOKEN) {
+        return false;
+    }
+    // 1st not number,
+    if (str.match(REGPAT) === null) {
+        return false;
+    }
+
+    if (numNumbers(str) > 3) {
+        return false;
+    }
+
+    return true;
+}
+// export function checkTokenid(token: string): boolean {
+//     return token.length >= TOKEN_MIN_LENGTH && token.length <= TOKEN_MAX_LENGTH;
+// }
+export function checkFee(fee: string): boolean {
+    let bn = new BigNumber(fee);
+
+    if (bn.isNaN() === true) {
+        return false;
+    }
+
+    let num = JSON.parse(fee);
+    return num >= FEE_MIN;
+}
+
+export function checkFeeForRange(fee: string, min: number, max: number) {
+    let bn = new BigNumber(fee);
+
+    if (bn.isNaN() === true) {
+        return false;
+    }
+
+    let num = JSON.parse(fee);
+    return num >= min && num <= max;
+}
+
+export function checkAddress(addr: string): boolean {
+    //console.log("len:", addr.length)
+    // return addr.length >= 30;
+    return isValidAddress(addr);
+}
+
+export function checkAddressArray(addrStr: string): boolean {
+    //console.log("len:", addr.length)
+    let addr: any;
+    try {
+        addr = JSON.parse(addrStr);
+        console.log('addr', addr);
+
+        for (let i = 0; i < addr.length; i++) {
+            console.log(addr[i])
+            if (!isValidAddress(addr[i])) {
+                return false;
+            }
+        }
+    } catch (e) {
+        return false;
+    }
+
+    return addr.length > 0;
+}
+export function checkRegisterName(name: string): boolean {
+    if (name.length > 20) {
+        return false;
+    } else {
+        return true;
+    }
+}
+export function checkRegisterIp(name: string): boolean {
+    if (name.match(REGIP) === null) {
+        return false;
+    } else {
+        return true;
+    }
+}
+export function checkRegisterUrl(name: string): boolean {
+    if (name.length > 50) {
+        return false;
+    } else {
+        return true;
+    }
+}
+export function checkRegisterAddress(name: string): boolean {
+    if (name.length > 50) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+export function checkBancorTokenPrebalance(prebalance: any): boolean {
+    if (prebalance.length === undefined
+        || prebalance.length === 0) {
+        return false;
+    }
+    for (let p of prebalance) {
+        if (p.amount === undefined
+            || !checkAmount(p.amount)
+            || p.address === undefined
+            || !checkAddress(p.address)
+        ) {
+            return false;
+        }
+        if ((p.lock_amount !== undefined
+            && !checkAmount(p.lock_amount))
+            || (p.lock_expiration !== undefined
+                && !checkAmount(p.lock_expiration))) {
+            return false;
+        }
+    }
+
+    return true;
+}
+//////////////////////////////////////////////////////////////
 export interface IfResult { resp: string | null, ret: number };
 
 export interface IfSysinfo {
@@ -12,6 +205,7 @@ export interface IfSysinfo {
     address: string;
     port: string;
     host: string;
+    verbose: boolean;
 }
 
 export interface IfContext { sysinfo: IfSysinfo, client: RPCClient }
@@ -19,37 +213,33 @@ export interface IfContext { sysinfo: IfSysinfo, client: RPCClient }
 export async function waitSeconds(seconds: number) {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
-            console.log('*');
+            // console.log('*');
             resolve('0');
         }, 1000 * seconds);
     });
 }
 
-// export function checkArgsNum(resolve: any, args: string[], numExpected: number): boolean {
-//     if (args.length < numExpected) {
-//         console.log('args NOK');
-//         resolve({
-//             ret: ErrorCode.RESULT_WRONG_ARG,
-//             resp: "Wrong args"
-//         });
-//         return false;
-//     } else {
-//         console.log('args OK')
-//         return true;
-//     }
-// }
+export function strAmountPrecision(num: string, precision: number): string {
+    let nTemp = parseFloat(num);
+    return nTemp.toFixed(precision);
+}
+
 
 export async function checkReceipt(ctx: IfContext, txhash: string): Promise<{ resp: string | null, ret: number }> {
     return new Promise<{ resp: string | null, ret: number }>(async (resolve, reject) => {
         let counter = 0;
 
         for (let i = 0; i < MAX_CONFIRM_TIMES; i++) {
+
             console.log('Wait to confirm');
-            await waitSeconds(1 * BLOCK_INTERVAL);
+            await waitSeconds(1.1 * BLOCK_INTERVAL);
 
             let result = await ctx.client.callAsync('getTransactionReceipt', { tx: txhash });
 
-            console.log(result);
+            if (ctx.sysinfo.verbose) {
+                console.log(result);
+            }
+
             let obj = JSON.parse(result.resp!);
 
             if (result.ret !== 200 || obj.err !== 0) {
@@ -63,11 +253,11 @@ export async function checkReceipt(ctx: IfContext, txhash: string): Promise<{ re
                 console.log('.');
             }
 
-            if (counter >= 2) {
-                console.log('confirmed');
+            if (counter >= 1) {
+                // console.log('Confirmed');
                 resolve({
                     ret: ErrorCode.RESULT_OK,
-                    resp: 'TX confirmed'
+                    resp: 'TX confirmed:' + txhash
                 });
                 return;
             }
@@ -80,3 +270,122 @@ export async function checkReceipt(ctx: IfContext, txhash: string): Promise<{ re
 
     });
 }
+
+export function checkTokenFactor(factor: string): boolean {
+    let bn = new BigNumber(factor);
+
+    if (bn.isNaN()) {
+        return false;
+    }
+    return bn.isLessThanOrEqualTo(1) && bn.isGreaterThan(0);
+}
+
+export function checkTokenNonliquidity(nonliquidity: string): boolean {
+    let bn = new BigNumber(nonliquidity);
+
+    if (bn.isNaN()) {
+        return false;
+    }
+    return bn.isLessThan(MAX_NONLIQUIDITY) && (bn.isGreaterThan(0) || bn.eq(0));
+}
+
+export function checkTokenAmount(amount: string): boolean {
+    let bn = new BigNumber(amount);
+
+    if (bn.isNaN()) {
+        return false;
+    }
+
+    return bn.isLessThan(MAX_TOKEN_AMOUNT) && bn.isGreaterThan(0);
+}
+
+export function checkCost(cost: string): boolean {
+    let bn = new BigNumber(cost);
+
+    if (bn.isNaN()) {
+        return false;
+    }
+    let num = JSON.parse(cost);
+    return num > 0 && num < MAX_COST;
+}
+
+export function formatNumber(num: string): string {
+    // console.log(num);
+    try {
+        let out = num.replace(/n/g, '');
+        let outString = out.toString(); //.toFixed(NUM_DIGITS);
+        return outString;
+    } catch (e) {
+        return 'error';
+    }
+}
+
+export function checkPrecision(arg: string) {
+    let bn = new BigNumber(arg);
+
+    if (bn.isNaN()) {
+        return false;
+    }
+    let num = parseInt(arg);
+    return num >= 0 && num <= MAX_NORMAL_TOKEN_PRECISION;
+}
+
+export function checkLockBancorTokenMultiPreBalances(arg: string): boolean {
+    try {
+        let obj = JSON.parse(arg);
+
+        if (obj.length > MAX_QUERY_NUM || obj.length <= 0) {
+            return false;
+        }
+
+        for (let i = 0; i < obj.length; i++) {
+            if (!isValidAddress(obj[i].address)) {
+                return false;
+            }
+            if (!checkAmount) {
+                return false;
+            }
+        }
+
+    } catch (e) {
+        console.log("parse arg prebalances failed");
+        return false;
+    }
+
+
+    return true;
+}
+////////////////////////////////////////////////
+// functions in common
+export async function sendAndCheckTx(ctx: IfContext, tx: ValueTransaction): Promise<IfResult> {
+    let { err, nonce } = await ctx.client.getNonce({ address: ctx.sysinfo.address });
+
+    if (err) {
+        console.error(`${tx.method} getNonce failed for ${err}`);
+        return {
+            ret: ErrorCode.RESULT_FAILED,
+            resp: `${tx.method} getNonce failed for ${err}`
+        };
+    }
+
+    tx.nonce = nonce! + 1;
+    if (ctx.sysinfo.verbose) {
+        console.log('nonce is:', tx.nonce);
+    }
+
+    tx.sign(ctx.sysinfo.secret);
+    let sendRet = await ctx.client.sendTransaction({ tx });
+    if (sendRet.err) {
+        console.error(`${tx.method} failed for ${sendRet.err}`);
+        return {
+            ret: ErrorCode.RESULT_FAILED,
+            resp: `${tx.method} failed for ${sendRet.err}`
+        };
+    }
+
+    console.log(`Send ${tx.method} tx: ${tx.hash}`);
+    // 需要查找receipt若干次，直到收到回执若干次，才确认发送成功, 否则是失败
+    let receiptResult = await checkReceipt(ctx, tx.hash);
+
+    return receiptResult; // {resp, ret}
+} 

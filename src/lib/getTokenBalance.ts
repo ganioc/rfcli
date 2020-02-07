@@ -1,6 +1,5 @@
-import { RPCClient } from '../client/client/rfc_client';
 import { ErrorCode } from "../core";
-import { IfResult, IfContext } from './common';
+import { IfResult, IfContext, checkTokenid, formatNumber } from './common';
 
 const FUNC_NAME = 'view';
 
@@ -16,22 +15,36 @@ export async function getTokenBalance(ctx: IfContext, args: string[]): Promise<I
             return;
         }
 
+        if (!checkTokenid(args[0])) {
+            resolve({
+                ret: ErrorCode.RESULT_WRONG_ARG,
+                resp: "Wrong tokenid , length [3-12]"
+            });
+            return;
+        }
+
         let params =
         {
-            method: 'getBalance',
+            method: 'getTokenBalance',
             params: {
                 address: args[1],
-                tokenid: args[0]
+                tokenid: args[0].toUpperCase()
             }
         }
 
         let cr = await ctx.client.callAsync(FUNC_NAME, params);
-        console.log(cr);
+        if (ctx.sysinfo.verbose) {
+            console.log(cr);
+        }
+
         resolve(cr);
     });
 }
-export function prnGetTokenBalance(obj: IfResult) {
-    console.log(obj);
+export function prnGetTokenBalance(ctx: IfContext, obj: IfResult) {
+    if (ctx.sysinfo.verbose) {
+        console.log(obj);
+    }
+
     console.log('');
 
     if (!obj.resp) {
@@ -41,7 +54,12 @@ export function prnGetTokenBalance(obj: IfResult) {
     let objJson: any;
     try {
         objJson = JSON.parse(obj.resp);
-        // console.log('Ruff: ', objJson.value.replace(/n/g, ''))
+        if (objJson.err === 0) {
+            console.log('Balance: ', formatNumber(objJson.value));
+        } else {
+            console.log('Error:', objJson.err);
+        }
+
     } catch (e) {
         console.log(e);
     }

@@ -1,5 +1,4 @@
-import { RPCClient } from '../client/client/rfc_client';
-import { ErrorCode } from "../core";
+
 import { IfResult, IfContext } from './common';
 import { BigNumber } from 'bignumber.js';
 import { MapFromObject } from '../core/serializable';
@@ -16,12 +15,18 @@ export async function getVote(ctx: IfContext, args: string[]): Promise<IfResult>
         }
         // check args
         let cr = await ctx.client.callAsync(FUNC_NAME, params);
-        console.log(cr);
+        if (ctx.sysinfo.verbose) {
+            console.log(cr);
+        }
+
         resolve(cr);
     });
 }
-export function prnGetVote(obj: IfResult) {
-    console.log(obj);
+export function prnGetVote(ctx: IfContext, obj: IfResult) {
+    if (ctx.sysinfo.verbose) {
+        console.log(obj);
+    }
+
     console.log('');
 
     if (!obj.resp) {
@@ -31,10 +36,6 @@ export function prnGetVote(obj: IfResult) {
     let objJson: any;
     try {
         objJson = JSON.parse(obj.resp);
-        //console.log('Ruff: ', objJson.value.replace(/n/g, ''))
-        // objJson.forEach((element: string) => {
-        //     console.log(element.replace(/<=/g, ''));
-        // });
         let vote: Map<string, BigNumber> = MapFromObject(objJson.value!);
         console.log(colors.green('Votes:'));
         for (let [k, v] of vote) {

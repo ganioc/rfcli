@@ -48,7 +48,7 @@ export class Transaction extends SerializableWithHash {
     set input(i: any) {
         this.m_input = i;
     }
-    
+
     /**
      *  virtual验证交易的签名段
      */
@@ -59,11 +59,15 @@ export class Transaction extends SerializableWithHash {
         return Address.verify(this.m_hash, this.m_signature, this.m_publicKey);
     }
 
-    public sign(privateKey: Buffer|string) {
-        let pubkey = Address.publicKeyFromSecretKey(privateKey);
-        this.m_publicKey = pubkey!;
-        this.updateHash();
-        this.m_signature = Address.sign(this.m_hash, privateKey);
+    public sign(privateKey: Buffer | string | null) {
+        if (privateKey) {
+            let pubkey = Address.publicKeyFromSecretKey(privateKey);
+            this.m_publicKey = pubkey!;
+            this.updateHash();
+            this.m_signature = Address.sign(this.m_hash, privateKey);
+        } else {
+            console.log('!!!! unlock first !!!!');
+        }
     }
 
     protected _encodeHashContent(writer: BufferWriter): ErrorCode {
@@ -113,7 +117,7 @@ export class Transaction extends SerializableWithHash {
         } catch (e) {
             return ErrorCode.RESULT_INVALID_FORMAT;
         }
-        
+
         return ErrorCode.RESULT_OK;
     }
 
@@ -142,7 +146,7 @@ export class Transaction extends SerializableWithHash {
         return obj;
     }
 
-    static fromRaw(raw: string|Buffer, T: new () => Transaction): Transaction|undefined {
+    static fromRaw(raw: string | Buffer, T: new () => Transaction): Transaction | undefined {
         let buffer: Buffer;
         if (isString(raw)) {
             buffer = Buffer.from(raw, 'hex');
@@ -175,11 +179,11 @@ export class EventLog implements Serializable {
         return this.m_event;
     }
 
-    set index(o: object|undefined) {
+    set index(o: object | undefined) {
 
     }
 
-    get index(): object|undefined {
+    get index(): object | undefined {
         return undefined;
     }
 
@@ -197,7 +201,7 @@ export class EventLog implements Serializable {
         try {
             writer.writeVarString(this.m_event);
             if (this.m_params) {
-                input = JSON.stringify(toStringifiable(this.m_params, true));  
+                input = JSON.stringify(toStringifiable(this.m_params, true));
             } else {
                 input = JSON.stringify({});
             }
@@ -302,13 +306,13 @@ export class Receipt implements Serializable {
             } else {
                 writer.writeU16(this.m_eventIndex!);
             }
-            
+
             writer.writeI32(this.m_returnCode);
             writer.writeU16(this.m_eventLogs.length);
         } catch (e) {
             return ErrorCode.RESULT_INVALID_FORMAT;
         }
-        
+
         for (let log of this.m_eventLogs) {
             let err = log.encode(writer);
             if (err) {
@@ -324,11 +328,11 @@ export class Receipt implements Serializable {
             this.m_sourceType = reader.readU8();
             if (this.m_sourceType === ReceiptSourceType.transaction) {
                 this.m_transactionHash = reader.readVarString();
-            } else if (this.m_sourceType === ReceiptSourceType.preBlockEvent 
+            } else if (this.m_sourceType === ReceiptSourceType.preBlockEvent
                 || this.m_sourceType === ReceiptSourceType.postBlockEvent) {
                 this.m_eventIndex = reader.readU16();
             }
-            
+
             this.m_returnCode = reader.readI32();
             let nCount: number = reader.readU16();
             for (let i = 0; i < nCount; i++) {

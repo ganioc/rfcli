@@ -17,10 +17,13 @@ export async function getBlock(ctx: IfContext, args: string[]): Promise<IfResult
             return;
         }
 
+
         let params =
         {
             which: (args[0] === 'latest') ? args[0] : ((args[0].length < 64) ? parseInt(args[0]) : args[0]),
-            transactions: (args[1] === undefined) ? false : ((args[1].toLowerCase() === 'true') ? true : false)
+            transactions: (args[1] === undefined) ? false : ((args[1].toLowerCase() === 'true') ? true : false),
+            eventLog: (args[2] === undefined) ? false : ((args[2].toLowerCase() === 'true') ? true : false),
+            receipts: (args[3] === undefined) ? false : ((args[3].toLowerCase() === 'true') ? true : false)
         }
 
         let cr = await ctx.client.callAsync(FUNC_NAME, params);
@@ -28,6 +31,6 @@ export async function getBlock(ctx: IfContext, args: string[]): Promise<IfResult
         resolve(cr);
     });
 }
-export function prnGetBlock(obj: IfResult) {
+export function prnGetBlock(ctx: IfContext, obj: IfResult) {
     console.log(obj.resp);
 }

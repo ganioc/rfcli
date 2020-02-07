@@ -1,6 +1,7 @@
 import { RPCClient } from '../client/client/rfc_client';
 import { ErrorCode } from "../core";
-import { IfResult, IfContext } from './common';
+import { IfResult, IfContext, sysTokenSym, checkAddress ,formatNumber} from './common';
+import * as colors from 'colors';
 
 const FUNC_NAME = 'view';
 
@@ -14,6 +15,13 @@ export async function getBalance(ctx: IfContext, args: string[]): Promise<IfResu
                 params: { address: ctx.sysinfo.address }
             };
         } else {
+            if (!checkAddress(args[0])) {
+                resolve({
+                    ret: ErrorCode.RESULT_WRONG_ARG,
+                    resp: "Wrong address"
+                });
+                return;
+            }
             params =
                 {
                     method: 'getBalance',
@@ -22,12 +30,19 @@ export async function getBalance(ctx: IfContext, args: string[]): Promise<IfResu
         }
 
         let cr = await ctx.client.callAsync(FUNC_NAME, params);
-        console.log(cr);
+
+        if (ctx.sysinfo.verbose) {
+            console.log(cr);
+        }
+
         resolve(cr);
     });
 }
-export function prnGetBalance(obj: IfResult) {
-    console.log(obj);
+export function prnGetBalance(ctx: IfContext, obj: IfResult) {
+    if (ctx.sysinfo.verbose) {
+        console.log(obj);
+    }
+
     console.log('');
 
     if (!obj.resp) {
@@ -37,7 +52,7 @@ export function prnGetBalance(obj: IfResult) {
     let objJson: any;
     try {
         objJson = JSON.parse(obj.resp);
-        console.log('Ruff: ', objJson.value.replace(/n/g, ''))
+        console.log(colors.green(`${sysTokenSym}`), ":", formatNumber(objJson.value))
     } catch (e) {
         console.log(e);
     }

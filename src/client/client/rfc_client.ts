@@ -2,6 +2,8 @@ import { EventEmitter } from 'events';
 import { ErrorCode } from "../../core/error_code";
 import { ValueTransaction } from '../../core/value_chain/transaction'
 import { BufferWriter } from '../../core/lib/writer';
+import { IfSysinfo } from '../../lib/common';
+import { ctx } from '../../test/test_common';
 
 let XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest
 
@@ -20,13 +22,15 @@ export interface paramsGetBlock {
  */
 export class RPCClient {
     private m_url: string;
+    //private m_sys: any;
+    private m_verbose: boolean;
     // private m_tipBlockTimer?: any;
     // private m_tipBlock?: any;
     // private m_emitter = new EventEmitter();
 
-    constructor(serveraddr: string, port: number) {
+    constructor(serveraddr: string, port: number, sysinfo: IfSysinfo) {
         this.m_url = 'http://' + serveraddr + ':' + port + '/rpc';
-
+        this.m_verbose = sysinfo.verbose;
 
     }
 
@@ -35,7 +39,10 @@ export class RPCClient {
             funName,
             args: funcArgs
         };
-        console.log(`RPCClient send request ${sendObj.funName}, params ${JSON.stringify(sendObj.args)}`);
+        if (this.m_verbose) {
+            console.log(`RPCClient send request ${sendObj.funName}, params ${JSON.stringify(sendObj.args)}`);
+        }
+
 
         const xmlhttp = new XMLHttpRequest();
 
@@ -69,12 +76,20 @@ export class RPCClient {
 
     // getNonce
     async getNonce(params: { address: string }): Promise<{ err: ErrorCode, nonce?: number }> {
+
+        if (!params.address) {
+            console.log('unlock first');
+            return { err: ErrorCode.RESULT_FAILED };
+        }
         let cr = await this.callAsync('getNonce', params);
         if (cr.ret !== 200) {
             return { err: ErrorCode.RESULT_FAILED };
         }
-        console.log('nonce fb:');
-        console.log(cr);
+        if (this.m_verbose) {
+            console.log('nonce fb:');
+            console.log(cr);
+        }
+
         return JSON.parse(cr.resp!);
 
     }
@@ -88,6 +103,12 @@ export class RPCClient {
             return { err };
         }
         let cr = await this.callAsync('sendTransaction', { tx: writer.render() });
+
+        // if (ctx.sysinfo.verbose) {
+        //     console.log('cr:');
+        //     console.log(cr);
+        // }
+
         if (cr.ret !== 200) {
             console.log(`send tx failed ret `, cr.ret);
             return { err: ErrorCode.RESULT_FAILED };
