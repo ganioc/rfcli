@@ -6,6 +6,7 @@
 - 1.0.7 Add createToken, getMiners ...
 - 1.0.8 Add vote, mortgage, unmortgage ...
 - 1.0.9 upload ， modfity README
+- 2.1.0 Update newest Wallet function
 
 ## dependency
 - ES2017

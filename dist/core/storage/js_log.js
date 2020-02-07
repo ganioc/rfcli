@@ -1,0 +1,192 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const error_code_1 = require("../error_code");
+const serializable_1 = require("../serializable");
+class TransactionLogger {
+    constructor(owner) {
+        this.owner = owner;
+    }
+    async beginTransaction() {
+        this.owner.appendLog(`{let trans = (await storage.beginTransaction()).value;`);
+        return error_code_1.ErrorCode.RESULT_OK;
+    }
+    async commit() {
+        this.owner.appendLog(`await trans.commit();}`);
+        return error_code_1.ErrorCode.RESULT_OK;
+    }
+    async rollback() {
+        this.owner.appendLog(`await trans.rollback();}`);
+        return error_code_1.ErrorCode.RESULT_OK;
+    }
+}
+class KeyValueLogger {
+    constructor(owner, name) {
+        this.owner = owner;
+        this.name = name;
+    }
+    get(key) {
+        return Promise.resolve({ err: error_code_1.ErrorCode.RESULT_NOT_SUPPORT });
+    }
+    hexists(key, field) {
+        return Promise.resolve({ err: error_code_1.ErrorCode.RESULT_NOT_SUPPORT });
+    }
+    hget(key, field) {
+        return Promise.resolve({ err: error_code_1.ErrorCode.RESULT_NOT_SUPPORT });
+    }
+    hmget(key, fields) {
+        return Promise.resolve({ err: error_code_1.ErrorCode.RESULT_NOT_SUPPORT });
+    }
+    hlen(key) {
+        return Promise.resolve({ err: error_code_1.ErrorCode.RESULT_NOT_SUPPORT });
+    }
+    hkeys(key) {
+        return Promise.resolve({ err: error_code_1.ErrorCode.RESULT_NOT_SUPPORT });
+    }
+    hvalues(key) {
+        return Promise.resolve({ err: error_code_1.ErrorCode.RESULT_NOT_SUPPORT });
+    }
+    hgetall(key) {
+        return Promise.resolve({ err: error_code_1.ErrorCode.RESULT_NOT_SUPPORT });
+    }
+    lindex(key, index) {
+        return Promise.resolve({ err: error_code_1.ErrorCode.RESULT_NOT_SUPPORT });
+    }
+    llen(key) {
+        return Promise.resolve({ err: error_code_1.ErrorCode.RESULT_NOT_SUPPORT });
+    }
+    lrange(key, start, stop) {
+        return Promise.resolve({ err: error_code_1.ErrorCode.RESULT_NOT_SUPPORT });
+    }
+    async set(key, value) {
+        this.owner.appendLog(`await ${this.name}.set(${serializable_1.toEvalText(key)}, ${serializable_1.toEvalText(value)});`);
+        return { err: error_code_1.ErrorCode.RESULT_OK };
+    }
+    // hash
+    async hset(key, field, value) {
+        this.owner.appendLog(`await ${this.name}.hset(${serializable_1.toEvalText(key)}, ${serializable_1.toEvalText(field)}, ${serializable_1.toEvalText(value)});`);
+        return { err: error_code_1.ErrorCode.RESULT_OK };
+    }
+    async hmset(key, fields, values) {
+        this.owner.appendLog(`await ${this.name}.hmset(${serializable_1.toEvalText(key)}, ${serializable_1.toEvalText(fields)}, ${serializable_1.toEvalText(values)});`);
+        return { err: error_code_1.ErrorCode.RESULT_OK };
+    }
+    async hclean(key) {
+        this.owner.appendLog(`await ${this.name}.hclean(${serializable_1.toEvalText(key)});`);
+        return { err: error_code_1.ErrorCode.RESULT_OK };
+    }
+    async hdel(key, field) {
+        this.owner.appendLog(`await ${this.name}.hdel(${serializable_1.toEvalText(key)},${serializable_1.toEvalText(field)});`);
+        return { err: error_code_1.ErrorCode.RESULT_OK };
+    }
+    // array
+    async lset(key, index, value) {
+        this.owner.appendLog(`await ${this.name}.lset(${serializable_1.toEvalText(key)}, ${index}, ${serializable_1.toEvalText(value)});`);
+        return { err: error_code_1.ErrorCode.RESULT_OK };
+    }
+    async lpush(key, value) {
+        this.owner.appendLog(`await ${this.name}.lpush(${serializable_1.toEvalText(key)}, ${serializable_1.toEvalText(value)});`);
+        return { err: error_code_1.ErrorCode.RESULT_OK };
+    }
+    async lpushx(key, value) {
+        this.owner.appendLog(`await ${this.name}.lpushx(${serializable_1.toEvalText(key)}, ${serializable_1.toEvalText(value)});`);
+        return { err: error_code_1.ErrorCode.RESULT_OK };
+    }
+    async lpop(key) {
+        this.owner.appendLog(`await ${this.name}.lpop(${serializable_1.toEvalText(key)});`);
+        return { err: error_code_1.ErrorCode.RESULT_OK };
+    }
+    async rpush(key, value) {
+        this.owner.appendLog(`await ${this.name}.rpush(${serializable_1.toEvalText(key)}, ${serializable_1.toEvalText(value)});`);
+        return { err: error_code_1.ErrorCode.RESULT_OK };
+    }
+    async rpushx(key, value) {
+        this.owner.appendLog(`await ${this.name}.rpushx(${serializable_1.toEvalText(key)}, ${serializable_1.toEvalText(value)});`);
+        return { err: error_code_1.ErrorCode.RESULT_OK };
+    }
+    async rpop(key) {
+        this.owner.appendLog(`await ${this.name}.rpop(${serializable_1.toEvalText(key)});`);
+        return { err: error_code_1.ErrorCode.RESULT_OK };
+    }
+    async linsert(key, index, value) {
+        this.owner.appendLog(`await ${this.name}.linsert(${serializable_1.toEvalText(key)}, ${index}, ${serializable_1.toEvalText(value)});`);
+        return { err: error_code_1.ErrorCode.RESULT_OK };
+    }
+    async lremove(key, index) {
+        this.owner.appendLog(`await ${this.name}.lremove(${serializable_1.toEvalText(key)}, ${index});`);
+        return { err: error_code_1.ErrorCode.RESULT_OK };
+    }
+}
+class DatabaseLogger {
+    constructor(owner, name) {
+        this.owner = owner;
+        this.name = name;
+        this.m_nextVal = 0;
+    }
+    _kvVal() {
+        let val = `${this.name}kv${this.m_nextVal}`;
+        ++this.m_nextVal;
+        return val;
+    }
+    async createKeyValue(name) {
+        let val = this._kvVal();
+        this.owner.appendLog(`let ${val} = (await ${this.name}.createKeyValue(${JSON.stringify(name)})).kv;`);
+        return { err: error_code_1.ErrorCode.RESULT_OK, kv: new KeyValueLogger(this.owner, val) };
+    }
+    async getReadWritableKeyValue(name) {
+        let val = this._kvVal();
+        this.owner.appendLog(`let ${val} = (await ${this.name}.getReadWritableKeyValue(${JSON.stringify(name)})).kv;`);
+        return { err: error_code_1.ErrorCode.RESULT_OK, kv: new KeyValueLogger(this.owner, val) };
+    }
+}
+class JStorageLogger {
+    constructor() {
+        this.m_log = '';
+        this.m_nextVal = 0;
+        this.m_log = '';
+    }
+    _dbVal() {
+        let val = `db${this.m_nextVal}`;
+        ++this.m_nextVal;
+        return val;
+    }
+    get log() {
+        return this.m_log;
+    }
+    redoOnStorage(storage) {
+        return new Promise((resolve) => {
+            eval(this.m_log);
+        });
+    }
+    encode(writer) {
+        writer.writeVarString(this.m_log);
+        return error_code_1.ErrorCode.RESULT_OK;
+    }
+    decode(reader) {
+        this.m_log = reader.readVarString();
+        return error_code_1.ErrorCode.RESULT_OK;
+    }
+    init() {
+        this.m_log = `const BigNumber = require('bignumber.js');async function redo() {`;
+    }
+    finish() {
+        this.appendLog('}; redo().then(()=>{resolve(0);})');
+    }
+    appendLog(log) {
+        this.m_log += log;
+    }
+    async createDatabase(name) {
+        let val = this._dbVal();
+        this.appendLog(`let ${val} = (await storage.createDatabase(${JSON.stringify(name)})).value;`);
+        return { err: error_code_1.ErrorCode.RESULT_OK, value: new DatabaseLogger(this, val) };
+    }
+    async getReadWritableDatabase(name) {
+        let val = this._dbVal();
+        this.appendLog(`let ${val} = (await storage.getReadWritableDatabase(${JSON.stringify(name)})).value;`);
+        return { err: error_code_1.ErrorCode.RESULT_OK, value: new DatabaseLogger(this, val) };
+    }
+    async beginTransaction() {
+        return { err: error_code_1.ErrorCode.RESULT_OK, value: new TransactionLogger(this) };
+    }
+}
+exports.JStorageLogger = JStorageLogger;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoianNfbG9nLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vc3JjL2NvcmUvc3RvcmFnZS9qc19sb2cudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFBQSw4Q0FBMEM7QUFFMUMsa0RBQXVFO0FBR3ZFO0lBQ0ksWUFBb0IsS0FBcUI7UUFBckIsVUFBSyxHQUFMLEtBQUssQ0FBZ0I7SUFFekMsQ0FBQztJQUVELEtBQUssQ0FBQyxnQkFBZ0I7UUFDbEIsSUFBSSxDQUFDLEtBQUssQ0FBQyxTQUFTLENBQUMsd0RBQXdELENBQUMsQ0FBQztRQUMvRSxPQUFPLHNCQUFTLENBQUMsU0FBUyxDQUFDO0lBQy9CLENBQUM7SUFFRCxLQUFLLENBQUMsTUFBTTtRQUNSLElBQUksQ0FBQyxLQUFLLENBQUMsU0FBUyxDQUFDLHdCQUF3QixDQUFDLENBQUM7UUFDL0MsT0FBTyxzQkFBUyxDQUFDLFNBQVMsQ0FBQztJQUMvQixDQUFDO0lBRUQsS0FBSyxDQUFDLFFBQVE7UUFDVixJQUFJLENBQUMsS0FBSyxDQUFDLFNBQVMsQ0FBQywwQkFBMEIsQ0FBQyxDQUFDO1FBQ2pELE9BQU8sc0JBQVMsQ0FBQyxTQUFTLENBQUM7SUFDL0IsQ0FBQztDQUNKO0FBRUQ7SUFDSSxZQUFvQixLQUFxQixFQUFVLElBQVk7UUFBM0MsVUFBSyxHQUFMLEtBQUssQ0FBZ0I7UUFBVSxTQUFJLEdBQUosSUFBSSxDQUFRO0lBRS9ELENBQUM7SUFFRCxHQUFHLENBQUMsR0FBVztRQUNYLE9BQU8sT0FBTyxDQUFDLE9BQU8sQ0FBQyxFQUFDLEdBQUcsRUFBRSxzQkFBUyxDQUFDLGtCQUFrQixFQUFDLENBQUMsQ0FBQztJQUNoRSxDQUFDO0lBRUQsT0FBTyxDQUFDLEdBQVcsRUFBRSxLQUFhO1FBQzlCLE9BQU8sT0FBTyxDQUFDLE9BQU8sQ0FBQyxFQUFDLEdBQUcsRUFBRSxzQkFBUyxDQUFDLGtCQUFrQixFQUFDLENBQUMsQ0FBQztJQUNoRSxDQUFDO0lBRUQsSUFBSSxDQUFD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

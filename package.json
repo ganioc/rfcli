@@ -13,7 +13,7 @@
     "build": "",
     "preinstall": "",
     "install": "echo \"install ... \"",
-    "postinstall": "tsc -p ./ && chmod +x dist/cli.js",
+    "postinstall": "chmod +x dist/cli.js",
     "prepublish": ""
   },
   "repository": {
